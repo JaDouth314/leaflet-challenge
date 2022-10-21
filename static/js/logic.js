@@ -15,11 +15,43 @@ function createFeatures(earthQuakeData) {
         layer.bindPopup(`<h3>${feature.properties.place}</h3><hr><p>${new Date(feature.properties.time)}</p><p>Magnitude: ${feature.properties.mag}`);
     }
 
+    function createCircleMarker(feature, latlng){
+        options = {
+            radius: feature.properties.mag*5,
+            fillColor: chooseColor(feature.properties.mag),
+            color: "#000000",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.75,
+        }
+    return L.circleMarker(latlng, options);
+    }
+
     let earthquakes = L.geoJSON(earthQuakeData, {
-        onEachFeature: onEachFeature
+        onEachFeature: onEachFeature,
+        pointToLayer: createCircleMarker
     });
 
     createMap(earthquakes);
+}
+
+function chooseColor(mag){
+    switch(true){
+        case (mag < 0.99):
+            return "#008000";
+        case (mag < 1.99):
+            return "#7CFC00";
+        case (mag < 2.99):
+            return "#FFC000";
+        case (mag < 3.99):
+            return "#FFA500";
+        case (mag < 4.99):
+            return "#FF5F1F";
+        case (mag < 5.99):
+            return "#FF4433";
+        case (mag < 6.99):
+            return "#8B0000";
+    }
 }
 
 function createMap(earthquakes) {
@@ -51,9 +83,29 @@ function createMap(earthquakes) {
         layers: [street, earthquakes]
     });
 
+    //Create legend
+    let legend = L.control({
+        position: "bottomright"
+    });
+
+    legend.onAdd = function (map) {
+        let div = L.DomUtil.create('div', 'info legend'),
+            grades = [0, 1, 2, 3, 4, 5, 6],
+            labels = [];
+
+        for (let i = 0; i < grades.length; i++){
+            div.innerHTML +=
+                "<i style='background: " + chooseColor(grades[i]) + "'></i> " +
+                grades[i] + (grades[i + 1] ? "&ndash;" + grades[i + 1] + "<br>" : "+");
+        }
+        return div;
+    };
+
+
+
     //Create the layer control
     L.control.layers(baseMaps, overlayMaps, {
         collapsed: false
     }).addTo(myMap);
-
+    legend.addTo(myMap);
 }

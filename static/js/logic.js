@@ -9,12 +9,15 @@ d3.json(queryUrl).then(function (data) {
     createFeatures(data.features);
 });
 
+//Create a createFeatures function to create markers and label each location point
 function createFeatures(earthQuakeData) {
 
+    //Display info for each data point, including location, time, and magnitude
     function onEachFeature(feature, layer) {
         layer.bindPopup(`<h3>${feature.properties.place}</h3><hr><p>${new Date(feature.properties.time)}</p><p>Magnitude: ${feature.properties.mag}`);
     }
 
+    //A circle marker is show to indicate the magnitude of the earthquake and displays a color relative to its intensity
     function createCircleMarker(feature, latlng){
         options = {
             radius: feature.properties.mag*5,
@@ -24,17 +27,21 @@ function createFeatures(earthQuakeData) {
             opacity: 1,
             fillOpacity: 0.75,
         }
+    //Call the function
     return L.circleMarker(latlng, options);
     }
 
+    //Create the markers
     let earthquakes = L.geoJSON(earthQuakeData, {
         onEachFeature: onEachFeature,
         pointToLayer: createCircleMarker
     });
 
+    //Create the map
     createMap(earthquakes);
 }
 
+//Create a function to determine the intensity of an earthquake and fill its circle marker with the corresponding color
 function chooseColor(mag){
     switch(true){
         case (mag < 0.99):
@@ -54,6 +61,7 @@ function chooseColor(mag){
     }
 }
 
+//Create a function to populate and create the overal map
 function createMap(earthquakes) {
 
     //Create base layers
@@ -100,8 +108,6 @@ function createMap(earthquakes) {
         }
         return div;
     };
-
-
 
     //Create the layer control
     L.control.layers(baseMaps, overlayMaps, {
